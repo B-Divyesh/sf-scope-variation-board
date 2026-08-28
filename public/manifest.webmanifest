@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Change Ledger — Scope Variation Board",
+  "short_name": "Change Ledger",
+  "description": "Freeze and record client decisions on fixed-price scope changes.",
+  "start_url": "/?v=1",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f2efe4",
+  "theme_color": "#174d3a",
+  "orientation": "any",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
