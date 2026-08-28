@@ -1,0 +1,11 @@
+{
+  "slug": "scope-variation-board",
+  "title": "Change Ledger",
+  "territory": "utilities",
+  "user": "Solo service freelancers who need a client to approve added or changed fixed-price scope before the work silently becomes unpaid.",
+  "smallest_useful_product": "Offline PWA with clients, a base quote, line-item change cards, an immutable approval link/receipt, and CSV/PDF export.",
+  "success_measure": "In a 60-day pilot, 70% of created change cards receive an explicit client decision before related work is marked done.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "Approval receipts need timestamp and content hash; do not claim electronic-signature or legal enforceability; client data stays in the browser unless the owner exports it."
+}
