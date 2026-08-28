@@ -63,6 +63,22 @@ function download(name: string, contents: string, type: string): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+async function copyText(value: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch {
+    const input = document.createElement("textarea");
+    input.value = value;
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.append(input);
+    input.select();
+    const copied = document.execCommand("copy");
+    input.remove();
+    if (!copied) throw new Error("Copy was blocked. Select the link and copy it manually.");
+  }
+}
+
 async function persist(next: AppData, message?: string): Promise<void> {
   data = { ...next, updatedAt: new Date().toISOString() };
   await saveData(data);
@@ -120,7 +136,8 @@ function renderEmpty(): string {
 }
 
 function renderChange(change: ChangeItem, index: number, currency: string): string {
-  const receipt = change.receipts.at(-1);
+  const receipt = change.receipts.findLast((item) => item.revision === change.revision);
+  const hasEarlierReceipt = !receipt && change.receipts.length > 0;
   const lastSnapshot = change.snapshots.findLast((item) => item.revision === change.revision);
   return `<li class="change-card">
     <span class="marker" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span>
@@ -130,7 +147,7 @@ function renderChange(change: ChangeItem, index: number, currency: string): stri
     </div><strong class="change-amount">${formatMoney(change.amount, currency)}</strong></div>
     <p class="change-description">${escapeHtml(change.description)}</p>
     ${lastSnapshot ? `<p class="mini-note">Issued ${formatDate(lastSnapshot.issuedAt)} · <span class="hash" title="${lastSnapshot.hash}">SHA-256 ${lastSnapshot.hash.slice(0, 16)}…</span></p>` : ""}
-    ${receipt ? `<div class="receipt-strip ${receipt.decision === "declined" ? "declined" : ""}"><b>${receipt.decision === "approved" ? "Approved" : "Declined"} by ${escapeHtml(receipt.clientName)}</b> · ${formatDate(receipt.decidedAt)}${receipt.clientNote ? `<br />“${escapeHtml(receipt.clientNote)}”` : ""}<br /><span class="hash">Receipt ${receipt.receiptHash}</span></div>` : ""}
+    ${receipt ? `<div class="receipt-strip ${receipt.decision === "declined" ? "declined" : ""}"><b>${receipt.decision === "approved" ? "Approved" : "Declined"} by ${escapeHtml(receipt.clientName)}</b> · ${formatDate(receipt.decidedAt)}${receipt.clientNote ? `<br />“${escapeHtml(receipt.clientNote)}”` : ""}<br /><span class="hash">Receipt ${receipt.receiptHash}</span></div>` : hasEarlierReceipt ? `<p class="mini-note">A decision for an earlier revision remains in the exported history; this revision needs a fresh decision.</p>` : ""}
     <div class="change-actions">
       <button type="button" data-action="share" data-id="${change.id}">${lastSnapshot && change.status !== "draft" ? "View approval link" : "Create approval link"}</button>
       <button type="button" data-action="edit-change" data-id="${change.id}">Edit</button>
@@ -274,10 +291,10 @@ async function openShare(changeId: string): Promise<void> {
     <div class="share-box"><label class="field-label" for="approval-link">Private fragment link</label><textarea id="approval-link" class="share-link" readonly>${escapeHtml(link)}</textarea><p class="mini-note">URL fragments are not sent to a web server. Long links are expected because the record travels inside the link.</p></div>
     <p><span class="hash">SHA-256 ${snapshot.hash}</span></p><div class="button-row"><button type="button" class="primary" data-action="copy-approval">Copy approval link</button><button type="button" class="secondary" data-action="open-approval">Preview client view</button></div>`;
   dialog.querySelector("[data-action='copy-approval']")?.addEventListener("click", async () => {
-    await navigator.clipboard.writeText(link);
-    showToast("Approval link copied.");
+    try { await copyText(link); showToast("Approval link copied."); } catch (error) { showToast(error instanceof Error ? error.message : "Copy was blocked."); }
   });
   dialog.querySelector("[data-action='open-approval']")?.addEventListener("click", () => window.open(link, "_blank", "noopener"));
+  dialog.addEventListener("close", renderWorkspace, { once: true });
 }
 
 async function handleProjectSubmit(form: HTMLFormElement): Promise<void> {
@@ -346,7 +363,7 @@ function bindWorkspace(): void {
   document.querySelectorAll<HTMLDialogElement>("dialog").forEach((dialog) => dialog.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close();
   }));
-  main.addEventListener("click", async (event) => {
+  if (!main.dataset.actionsBound) main.addEventListener("click", async (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action]");
     if (!button) return;
     const action = button.dataset.action;
@@ -382,6 +399,7 @@ function bindWorkspace(): void {
       showToast(error instanceof Error ? error.message : "Something went wrong.");
     }
   });
+  main.dataset.actionsBound = "true";
 
   document.querySelector<HTMLFormElement>("#project-form")?.addEventListener("submit", async (event) => {
     event.preventDefault(); const form = event.currentTarget as HTMLFormElement;
@@ -440,7 +458,7 @@ async function renderApproval(encoded: string): Promise<void> {
       const result = document.querySelector<HTMLElement>("#receipt-result")!;
       result.className = "receipt-result";
       result.innerHTML = `<h2>Decision receipt created</h2><p><b>${receipt.decision === "approved" ? "Approved" : "Declined"}</b> by ${escapeHtml(receipt.clientName)} at ${formatDate(receipt.decidedAt)}.</p><p>Return it using either option below. The freelancer's browser will verify it against the frozen link.</p><div class="button-row"><button type="button" class="primary" id="copy-receipt">Copy return link</button><button type="button" class="secondary" id="download-receipt">Download receipt</button></div><p class="mini-note" style="margin-top:12px"><span class="hash">Receipt SHA-256 ${receipt.receiptHash}</span></p>`;
-      document.querySelector("#copy-receipt")?.addEventListener("click", async () => { await navigator.clipboard.writeText(receiptLink); showToast("Return link copied. Send it back to the freelancer."); });
+      document.querySelector("#copy-receipt")?.addEventListener("click", async () => { try { await copyText(receiptLink); showToast("Return link copied. Send it back to the freelancer."); } catch (error) { showToast(error instanceof Error ? error.message : "Copy was blocked."); } });
       document.querySelector("#download-receipt")?.addEventListener("click", () => download(`change-ledger-receipt-${payload.change.id}.json`, JSON.stringify(receipt, null, 2), "application/json"));
       form.hidden = true; result.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch { form.querySelector(".form-error")!.textContent = "Could not create the receipt. Check the required fields and try again."; }

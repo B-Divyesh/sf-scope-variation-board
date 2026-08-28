@@ -1,4 +1,4 @@
-const VERSION = "change-ledger-v1";
+const VERSION = "change-ledger-v3";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SHELL = [
@@ -15,7 +15,19 @@ const SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil((async () => {
+    const cache = await caches.open(STATIC_CACHE);
+    const fresh = async (path) => {
+      const response = await fetch(new Request(path, { cache: "reload" }));
+      if (!response.ok) throw new Error(`Could not precache ${path}`);
+      await cache.put(path, response);
+    };
+    await Promise.all(SHELL.map(fresh));
+    const html = await (await cache.match("/index.html")).text();
+    const builtAssets = [...html.matchAll(/(?:src|href)="(\/assets\/[^\"]+)"/g)].map((match) => match[1]);
+    await Promise.all(builtAssets.map(fresh));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", (event) => {
@@ -42,10 +54,10 @@ self.addEventListener("fetch", (event) => {
       const copy = response.clone();
       caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, copy));
       return response;
-    }).catch(async () => (await caches.match(event.request)) || (await caches.match("/index.html")) || caches.match("/offline.html")));
+    }).catch(async () => (await caches.match(event.request, { ignoreVary: true })) || (await caches.match("/index.html", { ignoreVary: true })) || caches.match("/offline.html", { ignoreVary: true })));
     return;
   }
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+  event.respondWith(caches.match(event.request, { ignoreVary: true }).then((cached) => cached || fetch(event.request).then((response) => {
     if (response.ok && ["script", "style", "image", "font", "manifest"].includes(event.request.destination)) {
       const copy = response.clone();
       caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, copy));

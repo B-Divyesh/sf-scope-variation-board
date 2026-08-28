@@ -58,6 +58,11 @@ test("loads the installed shell while offline", async ({ page, context }, testIn
   test.skip(testInfo.project.name !== "chromium", "Offline service-worker check runs once.");
   await page.goto("/");
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
+  await expect.poll(() => page.evaluate(async () => {
+    const keys = await caches.keys();
+    const requests = (await Promise.all(keys.map(async (key) => (await caches.open(key)).keys()))).flat();
+    return requests.some((request) => request.url.endsWith(".js"));
+  })).toBe(true);
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Approve the detour");
