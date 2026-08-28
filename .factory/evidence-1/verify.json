@@ -1,0 +1,14 @@
+{
+  "url": "https://scope-variation-board.sociobot.in",
+  "loadMs": 708,
+  "errors": [],
+  "a11y": {
+    "title": "Change Ledger — approve scope before work begins",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 704
+  }
+}

@@ -1,0 +1,279 @@
+{
+  "communities": {
+    "0": [
+      "src_app",
+      "src_app_copytext",
+      "src_app_dialogs",
+      "src_app_download",
+      "src_app_escapehtml",
+      "src_app_footer",
+      "src_app_formatdate",
+      "src_app_init",
+      "src_app_renderapproval",
+      "src_app_renderapprovalerror",
+      "src_app_renderchange",
+      "src_app_renderledger",
+      "src_app_renderrail",
+      "src_app_statuslabel",
+      "src_app_unlocked",
+      "src_ledger_decodefragment",
+      "src_ledger_formatmoney",
+      "src_license",
+      "src_license_cachedunlock",
+      "src_license_capturelicensefromurl",
+      "src_license_checkouturl",
+      "src_license_product_slug",
+      "src_license_storedtoken",
+      "src_license_storetoken",
+      "src_license_verdict",
+      "src_license_verifylicense",
+      "src_types_changestatus"
+    ],
+    "1": [
+      "src_ledger",
+      "src_ledger_applyreceipt",
+      "src_ledger_canonicaljson",
+      "src_ledger_createapprovalpayload",
+      "src_ledger_createreceipt",
+      "src_ledger_encodefragment",
+      "src_ledger_ordered",
+      "src_ledger_projectcsv",
+      "src_ledger_safecsvcell",
+      "src_ledger_sha256",
+      "src_ledger_verifyapprovalpayload",
+      "src_ledger_verifyreceipt",
+      "src_types",
+      "src_types_appdata",
+      "src_types_approvalpayload",
+      "src_types_approvalpayloadbody",
+      "src_types_approvalreceipt",
+      "src_types_changeitem",
+      "src_types_changesnapshot",
+      "src_types_client",
+      "src_types_decision",
+      "src_types_project",
+      "tests_ledger_test",
+      "tests_ledger_test_change",
+      "tests_ledger_test_client",
+      "tests_ledger_test_project"
+    ],
+    "2": [
+      "ref_dom",
+      "ref_dom_iterable",
+      "ref_es2023",
+      "ref_playwright_config_ts",
+      "ref_src",
+      "ref_tests",
+      "ref_vite_client",
+      "ref_vite_config_ts",
+      "tsconfig",
+      "tsconfig_compileroptions",
+      "tsconfig_compileroptions_allowimportingtsextensions",
+      "tsconfig_compileroptions_isolatedmodules",
+      "tsconfig_compileroptions_lib",
+      "tsconfig_compileroptions_module",
+      "tsconfig_compileroptions_moduledetection",
+      "tsconfig_compileroptions_moduleresolution",
+      "tsconfig_compileroptions_noemit",
+      "tsconfig_compileroptions_nounusedlocals",
+      "tsconfig_compileroptions_nounusedparameters",
+      "tsconfig_compileroptions_skiplibcheck",
+      "tsconfig_compileroptions_strict",
+      "tsconfig_compileroptions_target",
+      "tsconfig_compileroptions_types",
+      "tsconfig_compileroptions_usedefineforclassfields",
+      "tsconfig_include"
+    ],
+    "3": [
+      "axe_core_playwright",
+      "package",
+      "package_devdependencies",
+      "package_devdependencies_axe_core_playwright",
+      "package_devdependencies_playwright_test",
+      "package_devdependencies_typescript",
+      "package_devdependencies_vite",
+      "package_devdependencies_vitest",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_check",
+      "package_scripts_dev",
+      "package_scripts_preview",
+      "package_scripts_test",
+      "package_scripts_test_e2e",
+      "package_type",
+      "package_version",
+      "playwright_test",
+      "typescript",
+      "vite",
+      "vitest"
+    ],
+    "4": [
+      "src_app_bindworkspace",
+      "src_app_fillchangeform",
+      "src_app_fillprojectform",
+      "src_app_handlechangesubmit",
+      "src_app_handleprojectsubmit",
+      "src_app_importfile",
+      "src_app_opendialog",
+      "src_app_openshare",
+      "src_app_persist",
+      "src_app_renderempty",
+      "src_app_renderworkspace",
+      "src_app_selectedproject",
+      "src_app_showtoast",
+      "src_db_savedata",
+      "src_ledger_parsebackup",
+      "src_ledger_uid"
+    ],
+    "5": [
+      "src_db",
+      "src_db_loaddata",
+      "src_db_opendb",
+      "src_ledger_emptydata"
+    ],
+    "6": [
+      "public_sw",
+      "public_sw_shell"
+    ],
+    "7": [
+      "playwright_config"
+    ],
+    "8": [
+      "tests_e2e_app_spec"
+    ],
+    "9": [
+      "vite_config"
+    ],
+    "10": [
+      "vitest_config"
+    ]
+  },
+  "cohesion": {
+    "0": 0.1737891737891738,
+    "1": 0.16923076923076924,
+    "2": 0.08,
+    "3": 0.08695652173913043,
+    "4": 0.275,
+    "5": 0.8333333333333334,
+    "6": 1.0,
+    "7": 1.0,
+    "8": 1.0,
+    "9": 1.0,
+    "10": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_app_bindworkspace",
+      "label": "bindWorkspace()",
+      "degree": 16
+    },
+    {
+      "id": "tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 15
+    },
+    {
+      "id": "src_app_renderapproval",
+      "label": "renderApproval()",
+      "degree": 14
+    },
+    {
+      "id": "src_app_renderworkspace",
+      "label": "renderWorkspace()",
+      "degree": 12
+    },
+    {
+      "id": "src_app_init",
+      "label": "init()",
+      "degree": 12
+    },
+    {
+      "id": "src_app_openshare",
+      "label": "openShare()",
+      "degree": 11
+    },
+    {
+      "id": "src_app_escapehtml",
+      "label": "escapeHtml()",
+      "degree": 10
+    },
+    {
+      "id": "src_app_showtoast",
+      "label": "showToast()",
+      "degree": 8
+    },
+    {
+      "id": "src_app_persist",
+      "label": "persist()",
+      "degree": 8
+    },
+    {
+      "id": "src_app_importfile",
+      "label": "importFile()",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "openShare()",
+      "target": "createApprovalPayload()",
+      "source_files": [
+        "src/app.ts",
+        "src/ledger.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "openShare()",
+      "target": "encodeFragment()",
+      "source_files": [
+        "src/app.ts",
+        "src/ledger.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "importFile()",
+      "target": "applyReceipt()",
+      "source_files": [
+        "src/app.ts",
+        "src/ledger.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "bindWorkspace()",
+      "target": "projectCsv()",
+      "source_files": [
+        "src/app.ts",
+        "src/ledger.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "bindWorkspace()",
+      "target": "storeToken()",
+      "source_files": [
+        "src/app.ts",
+        "src/license.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}
