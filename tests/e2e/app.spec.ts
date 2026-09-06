@@ -154,7 +154,7 @@ test("@claim:offline-reload keeps the sample ledger after the first visit", asyn
   }
 });
 
-test("@claim:private-local sends no demo data to another origin", async ({ page }, testInfo) => {
+test("@claim:private-local keeps demo data and approval fragments out of network requests", async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   const requests: string[] = [];
   page.on("request", (request) => requests.push(request.url()));
@@ -165,9 +165,14 @@ test("@claim:private-local sends no demo data to another origin", async ({ page 
   await page.getByLabel("Reason").fill("Privacy check");
   await page.getByLabel(/Fixed-price delta/).fill("10");
   await page.getByRole("button", { name: "Save change" }).click();
+  const privateCard = page.locator(".change-card", { hasText: "Private sample note" });
+  await privateCard.getByRole("button", { name: "Create approval link" }).click();
+  const approvalLink = await page.getByLabel("Private fragment link").inputValue();
+  await page.goto(approvalLink);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Private sample note");
   const baseOrigin = new URL(page.url()).origin;
   expect(requests.every((url) => new URL(url).origin === baseOrigin)).toBe(true);
-  expect(requests.some((url) => url.includes("Private%20sample%20note") || url.includes("Private+sample+note"))).toBe(false);
+  expect(requests.some((url) => url.includes("Private%20sample%20note") || url.includes("Private+sample+note") || url.includes("approval="))).toBe(false);
 });
 
 test("@claim:free-ledger allows one active ledger before showing the one-time license", async ({ page }, testInfo) => {

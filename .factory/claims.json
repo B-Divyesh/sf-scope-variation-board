@@ -50,10 +50,10 @@
   },
   {
     "id": "private-local",
-    "claim": "Client data stays in this browser and is not sent to another origin during normal use.",
+    "claim": "Client data stays in this browser, and approval-link contents stay out of network requests.",
     "where": "Landing page; privacy page; README",
     "test": "npm run test:e2e -- --grep @claim:private-local",
-    "sandbox": "Record every request while adding a sample change; assert all requests are same-origin and the change title never appears in a request URL."
+    "sandbox": "Record every request while adding a sample change and opening its approval link; assert all requests are same-origin and contain neither the change title nor the approval fragment."
   },
   {
     "id": "free-ledger",
