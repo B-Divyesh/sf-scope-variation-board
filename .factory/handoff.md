@@ -5,6 +5,19 @@ Implementation candidate: `ee72039fa3699357cbc5b1a95e8ec38f47681081`
 Previous failed candidate: `b67d6bdd1a9364d8140e3ec44eaf4dee044b9253`
 Product URL: <https://scope-variation-board.sociobot.in>
 Local verification: 2026-09-06 UTC
+Documentation baseline: `4299b2a969846c8c01c08191914b50b32e4c0363`
+
+## Live deployment verification
+
+Deployed 2026-09-06 UTC with `/opt/fleet/lib/deploy-static.sh scope-variation-board dist`. The tool reused the existing `sf-scope-variation-board` static app in Central US and completed its upload successfully. The product origin now byte-matches the built `dist/index.html` and hashed JavaScript asset from implementation candidate `ee72039`.
+
+- HTTPS home, `/demo`, `/privacy/`, `/terms/`, `/robots.txt`, and `/sitemap.xml` return 200.
+- An unknown URL returns the designed 404 page with HTTP 404.
+- Home response has the configured CSP, permissions policy, `nosniff`, referrer policy, and no-cache HTML policy. Hashed assets use `Cache-Control: public, max-age=31536000, immutable`.
+- Fresh desktop and 390 px mobile contexts show the job headline, solo-freelancer audience, and sample action before scrolling. Both have no console or page errors.
+- The live sample opens three cards and the persistent banner, reset, and start-real controls. Axe found no serious or critical issues on home, demo, privacy, terms, or 404.
+- In a dedicated fresh context, the live demo remains readable after service-worker control, offline mode, and reload.
+- `/opt/fleet/lib/verify-url.sh https://scope-variation-board.sociobot.in` passed: 624 ms load, title, language, one h1, main, image alt, labelled buttons, and no browser errors.
 
 ## What changed
 
@@ -65,4 +78,4 @@ The free core remains local-first and works without a billing registration. The 
 - Browser storage can be cleared. Users should download JSON backups for important records.
 - Hashes detect changed content but do not prove identity or legal enforceability.
 - Print/PDF uses the browser print path, so final PDF controls depend on the browser.
-- Live HTTPS deployment verification is recorded in the follow-up documentation commit after the static deployment finishes. This handoff records the implementation candidate separately from that later documentation revision.
+- The catalog description is copied to `/work/.evidence/catalog-description.txt`. The billing-offer metadata is at `/work/.evidence/billing-offer.json`; both are operator-facing evidence files and contain no credential.
