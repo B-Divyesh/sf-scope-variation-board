@@ -12,15 +12,15 @@ The interface is intentionally single-mode and light, like a survey sheet in day
 | --- | --- | --- |
 | `--paper` | `#F2EFE4` | warm map-sheet background |
 | `--sheet` | `#FFFCF4` | working surfaces |
-| `--ink` | `#17241F` | primary copy, 13.7:1 on paper |
-| `--muted` | `#53635B` | secondary copy, 5.8:1 on paper |
+| `--ink` | `#0B1912` | primary copy, high contrast on paper |
+| `--muted` | `#162C21` | secondary copy, high contrast on paper |
 | `--line` | `#B8B8A8` | boundaries (never sole status cue) |
-| `--pine` | `#174D3A` | primary action and survey marks |
-| `--pine-deep` | `#0E382A` | pressed/hover action |
-| `--route` | `#A84322` | scope delta and warning route |
-| `--approved` | `#216447` | approved state with check label |
-| `--pending` | `#8A5A12` | pending state with clock label |
-| `--declined` | `#8F2F2B` | declined/error state with cross label |
+| `--pine` | `#00281A` | primary action and survey marks |
+| `--pine-deep` | `#001B11` | pressed/hover action |
+| `--route` | `#4D1207` | scope delta and warning route |
+| `--approved` | `#00281A` | approved state with check label |
+| `--pending` | `#3E2700` | pending state with clock label |
+| `--declined` | `#48110F` | declined/error state with cross label |
 | `--focus` | `#006B8F` | 3 px keyboard focus ring |
 
 No gradients. Fine contour lines use pine at 8–12% opacity and never sit directly behind long-form body copy.
@@ -68,6 +68,12 @@ New records enter from their marker origin with a 180 ms opacity/translate trans
 ### Hand-authored assets
 
 The compass/contour brand mark, status glyphs, PWA icons and interface symbols are original SVG/CSS geometry authored in this repository. They use the same contour spacing and survey-marker motif. No stock libraries or third-party icon sets are used.
+
+### Social preview: `public/assets/change-ledger-social.webp`
+
+- Purpose: 1200 × 630 Open Graph and Twitter preview derived from the generated contour illustration.
+- Method: a centre crop and WebP optimisation of `public/assets/contour-ledger.webp` with ImageMagick on 2026-09-06.
+- License/provenance: derivative of the original generated product illustration above; no new third-party material.
 
 ## Print and evidence artifact
 

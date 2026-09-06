@@ -1,15 +1,17 @@
-const VERSION = "change-ledger-v3";
+const VERSION = "change-ledger-v4";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SHELL = [
   "/",
   "/index.html",
   "/offline.html",
+  "/404.html",
   "/manifest.webmanifest",
   "/privacy/",
   "/terms/",
   "/assets/legal.css",
   "/assets/contour-ledger.webp",
+  "/assets/change-ledger-social.webp",
   "/icons/icon-192.png",
   "/icons/icon-512.png"
 ];

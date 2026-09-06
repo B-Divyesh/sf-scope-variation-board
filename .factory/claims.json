@@ -1,0 +1,65 @@
+[
+  {
+    "id": "sample-demo",
+    "claim": "Try it with sample data opens a populated client ledger in one click.",
+    "where": "Landing page primary action; README; demo documentation",
+    "test": "npm run test:e2e -- --grep @claim:sample-demo",
+    "sandbox": "Fresh browser context; click the landing action; assert the demo banner and three sample change cards."
+  },
+  {
+    "id": "demo-isolation",
+    "claim": "Sample changes never change a real ledger.",
+    "where": "Demo banner; demo documentation",
+    "test": "npm run test:e2e -- --grep @claim:demo-isolation",
+    "sandbox": "Create a real ledger, add a demo-only change, leave demo, and assert only the real ledger remains."
+  },
+  {
+    "id": "approval-receipt",
+    "claim": "Change Ledger records a client decision only when it matches the frozen change revision.",
+    "where": "README; approval and receipt screens",
+    "test": "npm run test:e2e -- --grep @claim:approval-receipt",
+    "sandbox": "Demo pending change; client approves its frozen link; owner imports the return receipt and sees Approved."
+  },
+  {
+    "id": "csv-export",
+    "claim": "Exports the selected ledger as CSV.",
+    "where": "Ledger toolbar; README",
+    "test": "npm run test:e2e -- --grep @claim:csv-export",
+    "sandbox": "Demo data; download CSV; assert its header and one row for each of the three sample changes."
+  },
+  {
+    "id": "json-backup",
+    "claim": "Downloads the complete workspace as JSON.",
+    "where": "Backup dialog; README",
+    "test": "npm run test:e2e -- --grep @claim:json-backup",
+    "sandbox": "Demo data; download backup; parse JSON and assert one client, one project, and three changes."
+  },
+  {
+    "id": "print-pdf",
+    "claim": "Prints a populated ledger to a PDF-ready page.",
+    "where": "Ledger toolbar; README; terms",
+    "test": "npm run test:e2e -- --grep @claim:print-pdf",
+    "sandbox": "Demo data; use Chromium print output and assert a non-empty A4 PDF is produced."
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "Landing page; README; privacy page",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "Dedicated fresh browser context visits the demo, waits for service-worker control, goes offline, reloads, and reads the sample ledger."
+  },
+  {
+    "id": "private-local",
+    "claim": "Client data stays in this browser and is not sent to another origin during normal use.",
+    "where": "Landing page; privacy page; README",
+    "test": "npm run test:e2e -- --grep @claim:private-local",
+    "sandbox": "Record every request while adding a sample change; assert all requests are same-origin and the change title never appears in a request URL."
+  },
+  {
+    "id": "free-ledger",
+    "claim": "One active ledger is free; unlimited active ledgers cost $19 once.",
+    "where": "Landing page; license dialog; terms",
+    "test": "npm run test:e2e -- --grep @claim:free-ledger",
+    "sandbox": "Create one real ledger, request another, and assert the one-time $19 license dialog and product checkout link appear."
+  }
+]

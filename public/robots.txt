@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://scope-variation-board.sociobot.in/sitemap.xml

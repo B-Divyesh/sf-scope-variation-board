@@ -1,5 +1,6 @@
 import "./styles.css";
-import { loadData, saveData } from "./db";
+import { clearData, loadData, saveData, setStorageNamespace } from "./db";
+import { createDemoData } from "./demo";
 import {
   applyReceipt,
   createApprovalPayload,
@@ -24,6 +25,12 @@ import type { AppData, ApprovalPayload, ApprovalReceipt, ChangeItem, ChangeStatu
 
 const main = document.querySelector<HTMLElement>("#main")!;
 const toast = document.querySelector<HTMLElement>("#toast")!;
+const demoMode = location.pathname === "/demo" || new URLSearchParams(location.search).get("demo") === "1";
+setStorageNamespace(demoMode ? "demo" : "real");
+if (demoMode) {
+  document.title = "Demo — Change Ledger";
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute("href", `${location.origin}/demo`);
+}
 let data: AppData;
 let filter: ChangeStatus | "all" = "all";
 let unlocked = cachedUnlock();
@@ -69,8 +76,7 @@ async function copyText(value: string): Promise<void> {
   } catch {
     const input = document.createElement("textarea");
     input.value = value;
-    input.style.position = "fixed";
-    input.style.opacity = "0";
+    input.className = "copy-helper";
     document.body.append(input);
     input.select();
     const copied = document.execCommand("copy");
@@ -88,8 +94,8 @@ async function persist(next: AppData, message?: string): Promise<void> {
 
 function footer(): string {
   return `<footer class="footer">
-    <span>Private by default · generated relief-map imagery is disclosed in the <a href="/terms/">terms</a>.</span>
-    <nav aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></nav>
+    <span>Change Ledger records fixed-price scope changes on this device.</span>
+    <nav aria-label="Footer"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><span>Built by Param Factory · v1.1.0</span></nav>
   </footer>`;
 }
 
@@ -106,10 +112,10 @@ function renderRail(project: Project | undefined): string {
       return `<li><button type="button" class="project-select" data-action="select-project" data-id="${item.id}" aria-current="${project?.id === item.id}">
         <strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(client?.name ?? "Unknown client")}</small>
       </button></li>`;
-    }).join("")}</ul>` : `<p class="mini-note">No ledgers plotted yet.</p>`}
+    }).join("")}</ul>` : `<p class="mini-note">No ledgers yet.</p>`}
     <div class="rail-footer">
       <button class="quiet-button" type="button" data-action="open-data">Import or back up data</button><br />
-      <button class="quiet-button" type="button" data-action="open-unlock">${unlocked ? "Field kit unlocked" : "Unlock unlimited ledgers"}</button>
+      <button class="quiet-button" type="button" data-action="open-unlock">${unlocked ? "Unlimited ledgers active" : "Unlock unlimited ledgers"}</button>
     </div>
   </aside>`;
 }
@@ -117,21 +123,26 @@ function renderRail(project: Project | undefined): string {
 function renderEmpty(): string {
   return `<section class="empty-hero" aria-labelledby="page-title">
     <div class="hero-copy">
-      <p class="eyebrow">Fixed-price work, clearly rerouted</p>
-      <h1 id="page-title">Approve the detour before you do the work.</h1>
-      <p class="lead">Turn an out-of-scope request into a client-readable change, freeze the exact terms, and bring the decision back to your ledger.</p>
+      <p class="eyebrow">Fixed-price scope changes</p>
+      <h1 id="page-title">Approve scope changes before extra work.</h1>
+      <p class="lead">For solo service freelancers who need clients to approve fixed-price changes before extra work begins.</p>
       <ul class="hero-points">
-        <li><span aria-hidden="true">01</span><div><b>Plot the change</b><br /><small>Describe the new work and fixed-price delta.</small></div></li>
-        <li><span aria-hidden="true">02</span><div><b>Share a frozen link</b><br /><small>The content hash changes if the terms change.</small></div></li>
-        <li><span aria-hidden="true">03</span><div><b>Import the decision</b><br /><small>Keep a timestamped receipt before marking work done.</small></div></li>
+        <li><span aria-hidden="true">01</span><div><b>Add the changed work</b><br /><small>Describe the work and fixed-price difference.</small></div></li>
+        <li><span aria-hidden="true">02</span><div><b>Send the approval link</b><br /><small>The link keeps a fingerprint of the exact terms.</small></div></li>
+        <li><span aria-hidden="true">03</span><div><b>Save the client decision</b><br /><small>Keep the timestamped receipt before marking work done.</small></div></li>
       </ul>
-      <button type="button" class="primary" data-action="new-project">Create your first ledger</button>
-      <p class="mini-note" style="margin-top:12px">Free for one active ledger. No account and no cloud upload.</p>
+      <div class="hero-actions"><button type="button" class="primary" data-action="start-demo">Try it with sample data</button><button type="button" class="secondary" data-action="new-project">Create a client ledger</button></div>
+      <p class="action-note">The sample opens a realistic client ledger. Nothing is saved.</p>
+      <ul class="plain-facts"><li>Works offline after the first visit.</li><li>Data stays in this browser.</li><li>One ledger is free. Unlimited ledgers cost $19 once.</li></ul>
     </div>
     <figure class="hero-image">
       <picture><img src="/assets/contour-ledger.webp" width="1200" height="800" alt="Layered paper contour map with an ochre route branching at a brass survey pin" decoding="async" fetchpriority="high" /></picture>
-      <figcaption>Original AI-generated paper relief, created for Change Ledger.</figcaption>
+      <figcaption>Original illustration created for Change Ledger.</figcaption>
     </figure>
+  </section><section class="landing-details" aria-label="How Change Ledger works">
+    <div><h2>How Change Ledger works</h2><ol><li>Create a client ledger with the agreed base quote.</li><li>Add each changed deliverable and its fixed-price difference.</li><li>Send the frozen link and save the returned decision receipt.</li></ol></div>
+    <div><h2>What Change Ledger does not do</h2><p>It does not process payments, manage projects, or replace a contract or legal advice.</p></div>
+    <div><h2>Price</h2><p>The free version keeps one active ledger. A $19 one-time license adds unlimited active ledgers.</p></div>
   </section>`;
 }
 
@@ -169,7 +180,7 @@ function renderLedger(project: Project): string {
     ${!navigator.onLine ? `<p class="notice"><b>Offline:</b> your ledger still works. License checks will resume when connected.</p>` : ""}
     ${licenseMessage ? `<p class="notice error">${escapeHtml(licenseMessage)} <button class="quiet-button" data-action="open-unlock">Review license</button></p>` : ""}
     <header class="ledger-header">
-      <div><p class="eyebrow">Active field ledger</p><div class="ledger-title-line"><h1 id="page-title">${escapeHtml(project.title)}</h1></div>
+      <div><p class="eyebrow">Active client ledger</p><div class="ledger-title-line"><h1 id="page-title">${escapeHtml(project.title)}</h1></div>
       <p class="ledger-meta"><b>${escapeHtml(client.name)}</b>${client.company ? ` · ${escapeHtml(client.company)}` : ""}${client.email ? ` · <a href="mailto:${escapeHtml(client.email)}">${escapeHtml(client.email)}</a>` : ""}</p></div>
       <div class="header-actions">
         <button type="button" class="secondary" data-action="edit-project">Edit ledger</button>
@@ -183,20 +194,20 @@ function renderLedger(project: Project): string {
       <div><dt>Current total</dt><dd>${formatMoney(total, project.currency)}</dd></div>
       <div><dt>Pending</dt><dd>${formatMoney(pendingDelta, project.currency)}</dd></div>
     </dl>
-    <section class="scope-note" aria-labelledby="base-scope-heading"><h2 id="base-scope-heading">Base scope marker</h2><p>${escapeHtml(project.baseSummary)}</p></section>
+    <section class="scope-note" aria-labelledby="base-scope-heading"><h2 id="base-scope-heading">Base scope</h2><p>${escapeHtml(project.baseSummary)}</p></section>
     <div class="ledger-toolbar">
       <div class="filter-group" role="group" aria-label="Filter changes">
         ${(["all", "draft", "pending", "approved", "declined", "done"] as const).map((item) => `<button class="filter-button" type="button" data-action="filter" data-filter="${item}" aria-pressed="${filter === item}">${item === "all" ? `All · ${changes.length}` : escapeHtml(statusLabel(item))}</button>`).join("")}
       </div>
-      <button type="button" class="primary" data-action="add-change">Plot a change</button>
+      <button type="button" class="primary" data-action="add-change">Add a change</button>
     </div>
-    ${changes.length === 0 ? `<div class="empty-changes"><p class="eyebrow">No variations recorded</p><h2>The agreed route is still unchanged.</h2><p>When a request moves beyond the base quote, plot it here before starting the extra work.</p><button type="button" class="primary" data-action="add-change">Plot the first change</button></div>` : filtered.length ? `<ol class="changes">${filtered.map((item) => renderChange(item, changes.indexOf(item), project.currency)).join("")}</ol>` : `<div class="empty-changes"><h2>No changes match this legend.</h2><p>Choose another status to see the rest of this ledger.</p><button type="button" class="secondary" data-action="filter" data-filter="all">Show all changes</button></div>`}
-    <p class="mini-note" style="margin-top:24px">Workflow record only—not an electronic signature or a claim of legal enforceability.</p>
+    ${changes.length === 0 ? `<div class="empty-changes"><p class="eyebrow">No scope changes yet</p><h2>Add a change before extra work starts.</h2><p>Record the new work and its fixed-price difference here.</p><button type="button" class="primary" data-action="add-change">Add the first change</button></div>` : filtered.length ? `<ol class="changes">${filtered.map((item) => renderChange(item, changes.indexOf(item), project.currency)).join("")}</ol>` : `<div class="empty-changes"><h2>No changes match this filter.</h2><p>Choose another status to see the rest of this ledger.</p><button type="button" class="secondary" data-action="filter" data-filter="all">Show all changes</button></div>`}
+    <p class="mini-note spacing-top">Workflow record only. It is not an electronic signature or legal advice.</p>
   </section>`;
 }
 
 function dialogs(project: Project | undefined): string {
-  return `<dialog id="project-dialog" aria-labelledby="project-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Base camp</p><h2 id="project-dialog-title">Create a client ledger</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div>
+  return `<dialog id="project-dialog" aria-labelledby="project-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Client details</p><h2 id="project-dialog-title">Create a client ledger</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div>
     <form id="project-form" class="dialog-body"><input type="hidden" name="projectId" />
       <div class="form-grid">
         <div class="field"><label for="client-name">Client name <span aria-hidden="true">*</span></label><input id="client-name" name="clientName" required autocomplete="name" /></div>
@@ -205,10 +216,10 @@ function dialogs(project: Project | undefined): string {
         <div class="field full"><label for="project-title">Project title <span aria-hidden="true">*</span></label><input id="project-title" name="projectTitle" required /></div>
         <div class="field"><label for="base-quote">Base quote <span aria-hidden="true">*</span></label><input id="base-quote" name="baseQuote" type="number" step="0.01" min="0" required inputmode="decimal" /></div>
         <div class="field"><label for="currency">Currency</label><select id="currency" name="currency"><option>USD</option><option>EUR</option><option>GBP</option><option>INR</option><option>AUD</option><option>CAD</option><option>SGD</option><option>NZD</option><option>JPY</option></select></div>
-        <div class="field full"><label for="base-summary">Base scope summary <span aria-hidden="true">*</span></label><textarea id="base-summary" name="baseSummary" required></textarea><small>The agreed starting route, in plain language.</small></div>
+        <div class="field full"><label for="base-summary">Base scope summary <span aria-hidden="true">*</span></label><textarea id="base-summary" name="baseSummary" required></textarea><small>Describe the agreed work in plain language.</small></div>
       </div><p class="form-error" aria-live="assertive"></p><div class="form-actions"><button type="button" class="secondary" data-close>Cancel</button><button type="submit" class="primary">Save ledger</button></div>
     </form></dialog>
-  <dialog id="change-dialog" aria-labelledby="change-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Scope marker</p><h2 id="change-dialog-title">Plot a change</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div>
+  <dialog id="change-dialog" aria-labelledby="change-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Change details</p><h2 id="change-dialog-title">Add a change</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div>
     <form id="change-form" class="dialog-body"><input type="hidden" name="changeId" />
       <div class="form-grid"><div class="field full"><label for="change-title">Short title <span aria-hidden="true">*</span></label><input id="change-title" name="title" required maxlength="100" /></div>
       <div class="field full"><label for="change-description">What is changing? <span aria-hidden="true">*</span></label><textarea id="change-description" name="description" required maxlength="2000"></textarea><small>Specific enough that both sides can recognise the added or changed deliverable.</small></div>
@@ -216,15 +227,15 @@ function dialogs(project: Project | undefined): string {
       <div class="field"><label for="change-amount">Fixed-price delta (${escapeHtml(project?.currency ?? "USD")}) <span aria-hidden="true">*</span></label><input id="change-amount" name="amount" type="number" step="0.01" required inputmode="decimal" /></div></div>
       <p class="mini-note">Editing an issued change creates a new revision. Earlier snapshots and receipts stay in the history.</p><p class="form-error" aria-live="assertive"></p><div class="form-actions"><button type="button" class="secondary" data-close>Cancel</button><button type="submit" class="primary">Save change</button></div>
     </form></dialog>
-  <dialog id="share-dialog" aria-labelledby="share-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Frozen route</p><h2 id="share-dialog-title">Client approval link</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div><div class="dialog-body" id="share-content"></div></dialog>
-  <dialog id="data-dialog" aria-labelledby="data-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Field archive</p><h2 id="data-dialog-title">Own your data</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div><div class="dialog-body">
+  <dialog id="share-dialog" aria-labelledby="share-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Approval link</p><h2 id="share-dialog-title">Client approval link</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div><div class="dialog-body" id="share-content"></div></dialog>
+  <dialog id="data-dialog" aria-labelledby="data-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Data backup</p><h2 id="data-dialog-title">Back up or restore data</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div><div class="dialog-body">
     <p>Download a complete JSON backup, restore one on another device, or import a client's decision receipt.</p><div class="button-row"><button type="button" class="secondary" data-action="export-json">Download backup</button><button type="button" class="secondary" data-action="choose-backup">Restore backup</button><button type="button" class="primary" data-action="choose-receipt">Import decision receipt</button></div>
     <input class="visually-hidden" id="backup-file" type="file" accept="application/json,.json" /><input class="visually-hidden" id="receipt-file" type="file" accept="application/json,.json" /><p class="form-error" id="data-error" aria-live="assertive"></p>
   </div></dialog>
-  <dialog id="unlock-dialog" aria-labelledby="unlock-dialog-title"><div class="dialog-head"><div><p class="eyebrow">Permanent field kit</p><h2 id="unlock-dialog-title">Unlock unlimited ledgers</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div><div class="dialog-body">
-    <p>The free field kit includes one active ledger, unlimited change cards, client decisions, backups, CSV and print/PDF export. Pay once to keep unlimited active client ledgers on this device.</p>
-    <div class="license-card"><p class="price">$19 one time</p><p>No subscription. Sociobot/Dodo is the merchant of record; refunds are handled there and revoke the license.</p><a class="primary button" href="${checkoutUrl()}">Buy the field kit</a></div>
-    <form id="license-form" style="margin-top:22px"><div class="field"><label for="license-token">Have a license? Paste it here</label><input id="license-token" name="token" value="${escapeHtml(storedToken())}" autocomplete="off" spellcheck="false" /></div><p class="form-error" aria-live="assertive"></p><div class="form-actions"><button class="primary" type="submit">Verify and restore</button></div></form>
+  <dialog id="unlock-dialog" aria-labelledby="unlock-dialog-title"><div class="dialog-head"><div><p class="eyebrow">One-time license</p><h2 id="unlock-dialog-title">Unlock unlimited ledgers</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div><div class="dialog-body">
+    <p>The free version includes one active ledger, unlimited change cards, client decisions, backups, CSV and print/PDF export. Pay once for unlimited active client ledgers on this device.</p>
+    <div class="license-card"><p class="price">$19 one time</p><p>No subscription. Sociobot/Dodo is the merchant of record. Refunds revoke the license.</p><a class="primary button" href="${checkoutUrl()}">Buy unlimited ledgers</a></div>
+    <form id="license-form" class="license-form"><div class="field"><label for="license-token">Have a license? Paste it here</label><input id="license-token" name="token" value="${escapeHtml(storedToken())}" autocomplete="off" spellcheck="false" /></div><p class="form-error" aria-live="assertive"></p><div class="form-actions"><button class="primary" type="submit">Verify and restore</button></div></form>
     <p class="mini-note">Verification contacts Sociobot only when a license is entered, then at most daily. Your client and project data are never included. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
   </div></dialog>`;
 }
@@ -232,7 +243,8 @@ function dialogs(project: Project | undefined): string {
 function renderWorkspace(): void {
   const project = selectedProject();
   if (project && data.selectedProjectId !== project.id) data.selectedProjectId = project.id;
-  main.innerHTML = `<div class="workspace">${renderRail(project)}<div class="ledger-main">${project ? renderLedger(project) : renderEmpty()}</div></div>${footer()}${dialogs(project)}`;
+  document.title = demoMode ? "Demo — Change Ledger" : "Change Ledger — approve scope changes";
+  main.innerHTML = `${demoMode ? `<aside class="demo-banner" aria-label="Demo controls"><p><b>Demo — sample data, nothing is saved.</b> Reset the sample or leave it before adding your own work.</p><div><button type="button" class="secondary" data-action="reset-demo">Reset demo</button><button type="button" class="primary" data-action="start-real">Start for real</button></div></aside>` : ""}<div class="workspace">${renderRail(project)}<div class="ledger-main">${project ? renderLedger(project) : renderEmpty()}</div></div>${footer()}${dialogs(project)}`;
   bindWorkspace();
 }
 
@@ -285,7 +297,7 @@ async function openShare(changeId: string): Promise<void> {
     };
     await saveData(data);
   }
-  const link = `${location.origin}${location.pathname}#approval=${encodeFragment(snapshot.payload)}`;
+  const link = `${location.origin}${demoMode ? "/demo" : location.pathname}#approval=${encodeFragment(snapshot.payload)}`;
   const dialog = openDialog("share-dialog");
   dialog.querySelector("#share-content")!.innerHTML = `<p>Send this link to <b>${escapeHtml(client.name)}</b>. It contains only this frozen project summary and change—not the rest of your workspace.</p>
     <div class="share-box"><label class="field-label" for="approval-link">Private fragment link</label><textarea id="approval-link" class="share-link" readonly>${escapeHtml(link)}</textarea><p class="mini-note">URL fragments are not sent to a web server. Long links are expected because the record travels inside the link.</p></div>
@@ -341,7 +353,7 @@ async function handleChangeSubmit(form: HTMLFormElement): Promise<void> {
     changes = [...data.changes, { id: uid("change"), projectId: project.id, title: String(values.get("title")).trim(), description: String(values.get("description")).trim(), reason: String(values.get("reason")).trim(), amount, createdAt: now, updatedAt: now, revision: 1, status: "draft", snapshots: [], receipts: [] }];
   }
   form.closest("dialog")?.close();
-  await persist({ ...data, changes }, changeId ? "New revision saved. Create a fresh approval link." : "Change plotted as a draft.");
+    await persist({ ...data, changes }, changeId ? "New revision saved. Create a fresh approval link." : "Change saved as a draft.");
 }
 
 async function importFile(file: File, receiptOnly: boolean): Promise<void> {
@@ -353,9 +365,16 @@ async function importFile(file: File, receiptOnly: boolean): Promise<void> {
     renderWorkspace();
     showToast("Decision receipt matched and imported.");
   } else {
+    const backup = parseBackup(value);
     if (!confirm("Restore this backup and replace the current browser workspace? Download a backup first if you need it.")) return;
-    await persist(parseBackup(value), "Backup restored.");
+    await persist(backup, "Backup restored.");
   }
+}
+
+function receiptRecoveryMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : "Could not import this receipt.";
+  if (message.includes("earlier revision")) return `${message} Create a new approval link for the current revision, then import that decision.`;
+  return message;
 }
 
 function bindWorkspace(): void {
@@ -369,7 +388,18 @@ function bindWorkspace(): void {
     const action = button.dataset.action;
     const id = button.dataset.id ?? "";
     try {
-      if (action === "new-project") {
+      if (action === "start-demo") {
+        location.assign("/demo");
+      } else if (action === "reset-demo") {
+        data = await createDemoData();
+        await saveData(data);
+        filter = "all";
+        renderWorkspace();
+        showToast("Sample data reset.");
+      } else if (action === "start-real") {
+        await clearData();
+        location.assign("/");
+      } else if (action === "new-project") {
         if (data.projects.some((item) => !item.archived) && !unlocked) openDialog("unlock-dialog"); else fillProjectForm();
       } else if (action === "select-project") {
         await persist({ ...data, selectedProjectId: id });
@@ -417,17 +447,24 @@ function bindWorkspace(): void {
     try {
       const result = await verifyLicense(true); unlocked = result.valid;
       if (!result.valid) { output.textContent = `This license is not active (${result.reason.replaceAll("_", " ")}).`; return; }
-      form.closest("dialog")?.close(); renderWorkspace(); showToast("Field kit unlocked on this device.");
+      form.closest("dialog")?.close(); renderWorkspace(); showToast("Unlimited ledgers are active on this device.");
     } catch { output.textContent = "Could not reach the license service. Check your connection and try again."; }
   });
   document.querySelector<HTMLInputElement>("#backup-file")?.addEventListener("change", async (event) => {
-    const file = (event.currentTarget as HTMLInputElement).files?.[0]; if (!file) return;
-    try { await importFile(file, false); } catch (error) { document.querySelector("#data-error")!.textContent = error instanceof Error ? error.message : "Could not restore this file."; }
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0]; if (!file) return;
+    try { await importFile(file, false); } catch (error) { document.querySelector("#data-error")!.textContent = error instanceof Error ? error.message : "Could not restore this file."; } finally { input.value = ""; }
   });
   document.querySelector<HTMLInputElement>("#receipt-file")?.addEventListener("change", async (event) => {
-    const file = (event.currentTarget as HTMLInputElement).files?.[0]; if (!file) return;
-    try { await importFile(file, true); } catch (error) { document.querySelector("#data-error")!.textContent = error instanceof Error ? error.message : "Could not import this receipt."; }
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0]; if (!file) return;
+    try { await importFile(file, true); } catch (error) { document.querySelector("#data-error")!.textContent = receiptRecoveryMessage(error); } finally { input.value = ""; }
   });
+}
+
+function renderReceiptImportError(message: string): void {
+  document.title = "Receipt could not be imported — Change Ledger";
+  main.innerHTML = `<section class="loading-state" aria-labelledby="receipt-error-title"><p class="eyebrow">Decision receipt not imported</p><h1 id="receipt-error-title">This receipt needs a current change.</h1><p>${escapeHtml(receiptRecoveryMessage(new Error(message)))}</p><p>Open the ledger, create a new approval link for the current revision, and ask the client to send back a new decision.</p><a class="primary button" href="/">Open your ledger</a></section>${footer()}`;
 }
 
 function renderApprovalError(message: string): void {
@@ -445,7 +482,7 @@ async function renderApproval(encoded: string): Promise<void> {
     <dl class="approval-details"><div><dt>Base quote</dt><dd>${formatMoney(payload.project.baseQuote, payload.project.currency)}</dd></div><div><dt>This change</dt><dd>${formatMoney(payload.change.amount, payload.project.currency)}</dd></div><div><dt>Revised total if approved</dt><dd>${formatMoney(payload.project.baseQuote + payload.change.amount, payload.project.currency)}</dd></div><div><dt>Link issued</dt><dd>${formatDate(payload.issuedAt)}</dd></div></dl>
     <section aria-labelledby="base-heading"><h2 id="base-heading">Original scope</h2><p>${escapeHtml(payload.project.baseSummary)}</p></section><section aria-labelledby="change-heading"><h2 id="change-heading">What changes</h2><p>${escapeHtml(payload.change.description)}</p>${payload.change.reason ? `<p class="reason"><b>Reason:</b> ${escapeHtml(payload.change.reason)}</p>` : ""}</section>
     <p class="mini-note">Content fingerprint<br /><span class="hash">SHA-256 ${payload.hash}</span></p>
-    <form id="decision-form"><fieldset style="border:0;padding:0;margin:28px 0 0"><legend class="field-label">Your decision <span aria-hidden="true">*</span></legend><div class="decision-options"><label class="decision-option"><input type="radio" name="decision" value="approved" required /> Approve this change</label><label class="decision-option"><input type="radio" name="decision" value="declined" required /> Decline this change</label></div></fieldset>
+    <form id="decision-form"><fieldset class="decision-fieldset"><legend class="field-label">Your decision <span aria-hidden="true">*</span></legend><div class="decision-options"><label class="decision-option"><input type="radio" name="decision" value="approved" required /> Approve this change</label><label class="decision-option"><input type="radio" name="decision" value="declined" required /> Decline this change</label></div></fieldset>
       <div class="form-grid"><div class="field full"><label for="decision-name">Your name <span aria-hidden="true">*</span></label><input id="decision-name" name="clientName" required autocomplete="name" /></div><div class="field full"><label for="decision-note">Note (optional)</label><textarea id="decision-note" name="clientNote" maxlength="1000"></textarea></div></div>
       <div class="notice"><b>Important:</b> This creates a workflow receipt, not an electronic signature or legal opinion. Send the receipt back to the freelancer so it enters their private ledger.</div><p class="form-error" aria-live="assertive"></p><button class="primary" type="submit">Create decision receipt</button>
     </form><div id="receipt-result"></div>
@@ -457,7 +494,7 @@ async function renderApproval(encoded: string): Promise<void> {
       const receiptLink = `${location.origin}${location.pathname}#receipt=${encodeFragment(receipt)}`;
       const result = document.querySelector<HTMLElement>("#receipt-result")!;
       result.className = "receipt-result";
-      result.innerHTML = `<h2>Decision receipt created</h2><p><b>${receipt.decision === "approved" ? "Approved" : "Declined"}</b> by ${escapeHtml(receipt.clientName)} at ${formatDate(receipt.decidedAt)}.</p><p>Return it using either option below. The freelancer's browser will verify it against the frozen link.</p><div class="button-row"><button type="button" class="primary" id="copy-receipt">Copy return link</button><button type="button" class="secondary" id="download-receipt">Download receipt</button></div><p class="mini-note" style="margin-top:12px"><span class="hash">Receipt SHA-256 ${receipt.receiptHash}</span></p>`;
+      result.innerHTML = `<h2>Decision receipt created</h2><p><b>${receipt.decision === "approved" ? "Approved" : "Declined"}</b> by ${escapeHtml(receipt.clientName)} at ${formatDate(receipt.decidedAt)}.</p><p>Return it using either option below. The freelancer's browser will verify it against the frozen link.</p><div class="button-row"><button type="button" class="primary" id="copy-receipt">Copy return link</button><button type="button" class="secondary" id="download-receipt">Download receipt</button></div><p class="mini-note spacing-top"><span class="hash">Receipt SHA-256 ${receipt.receiptHash}</span></p>`;
       document.querySelector("#copy-receipt")?.addEventListener("click", async () => { try { await copyText(receiptLink); showToast("Return link copied. Send it back to the freelancer."); } catch (error) { showToast(error instanceof Error ? error.message : "Copy was blocked."); } });
       document.querySelector("#download-receipt")?.addEventListener("click", () => download(`change-ledger-receipt-${payload.change.id}.json`, JSON.stringify(receipt, null, 2), "application/json"));
       form.hidden = true; result.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -468,17 +505,26 @@ async function renderApproval(encoded: string): Promise<void> {
 async function init(): Promise<void> {
   captureLicenseFromUrl();
   const approvalMatch = location.hash.match(/^#approval=(.+)$/);
-  if (approvalMatch) { await renderApproval(approvalMatch[1]); return; }
+  if (approvalMatch) { document.title = "Approve a scope change — Change Ledger"; await renderApproval(approvalMatch[1]); return; }
   try {
     data = await loadData();
+    if (demoMode && data.projects.length === 0) {
+      data = await createDemoData();
+      await saveData(data);
+    }
     const receiptMatch = location.hash.match(/^#receipt=(.+)$/);
     if (receiptMatch) {
-      data = await applyReceipt(data, decodeFragment<ApprovalReceipt>(receiptMatch[1]));
-      await saveData(data); history.replaceState({}, "", `${location.pathname}${location.search}`); showToast("Returned client decision imported and verified.");
+      try {
+        data = await applyReceipt(data, decodeFragment<ApprovalReceipt>(receiptMatch[1]));
+        await saveData(data); history.replaceState({}, "", `${location.pathname}${location.search}`); showToast("Returned client decision imported and verified.");
+      } catch (error) {
+        renderReceiptImportError(error instanceof Error ? error.message : "Could not import this receipt.");
+        return;
+      }
     }
     renderWorkspace();
   } catch (error) {
-    main.innerHTML = `<section class="loading-state"><p class="eyebrow">Local storage error</p><h1>Change Ledger could not open.</h1><p>${escapeHtml(error instanceof Error ? error.message : "Your browser blocked its local database.")}</p><p>Allow site storage or leave private browsing mode, then reload. Your data has not been uploaded elsewhere.</p><button class="primary" onclick="location.reload()">Try again</button></section>`;
+    main.innerHTML = `<section class="loading-state"><p class="eyebrow">Local storage error</p><h1>Change Ledger could not open.</h1><p>${escapeHtml(error instanceof Error ? error.message : "Your browser blocked its local database.")}</p><p>Allow site storage or leave private browsing mode, then reload. Your data has not been uploaded elsewhere.</p><a class="primary button" href="/">Try again</a></section>${footer()}`;
     return;
   }
   if (storedToken()) verifyLicense().then((result) => {
@@ -493,9 +539,10 @@ window.addEventListener("offline", () => { if (data) renderWorkspace(); showToas
 window.addEventListener("hashchange", () => location.reload());
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  const hadServiceWorkerController = Boolean(navigator.serviceWorker.controller);
   navigator.serviceWorker.register("/sw.js").catch(() => { /* App remains usable without installation support. */ });
   navigator.serviceWorker.addEventListener("message", (event) => {
-    if (event.data?.type === "APP_UPDATED") showToast("A new field map is ready.", { label: "Reload", run: () => location.reload() });
+    if (hadServiceWorkerController && event.data?.type === "APP_UPDATED") showToast("An update is ready.", { label: "Reload", run: () => location.reload() });
   });
 }
 

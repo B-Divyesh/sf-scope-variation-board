@@ -3,7 +3,7 @@
   "name": "Change Ledger — Scope Variation Board",
   "short_name": "Change Ledger",
   "description": "Freeze and record client decisions on fixed-price scope changes.",
-  "start_url": "/?v=1",
+  "start_url": "/?v=1.1.0",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f2efe4",
